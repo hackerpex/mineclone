@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { Controls } from "./controls/controls";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
 // SCENE
 const scene = new THREE.Scene();
@@ -26,7 +27,20 @@ scene.add(controls.getLockControls().getObject());
 
 let cube: THREE.Object3D;
 
+// LIGHT
+const ambientLight = new THREE.AmbientLight(0xcccccc);
+scene.add(ambientLight);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
+directionalLight.position.set(1, 1, 0.5).normalize();
+scene.add(directionalLight);
+
+const directionalLight1 = new THREE.DirectionalLight(0xffffff, 2);
+directionalLight1.position.set(5, 5, 0.5).normalize();
+scene.add(directionalLight1);
+
 // vars
+
+const loader = new GLTFLoader();
 
 let prevTime = performance.now();
 const velocity = new THREE.Vector3();
@@ -47,6 +61,26 @@ function init() {
 
   cube = new THREE.Mesh(geometry, material);
   scene.add(cube);
+
+  loadPlayer();
+}
+
+function loadPlayer() {
+  const file = "./assets/models/steve/scene.gltf";
+  // const file ='./assets/models/monkey/monkey.gltf';
+  loader.load(
+    file,
+    function (gltf) {
+      gltf.scene.scale.set(0.03, 0.03, 0.03); // scale here
+      scene.add(gltf.scene);
+    },
+    (xhr) => {
+      console.log("loaded", xhr.loaded);
+    },
+    (error) => {
+      console.log("erro", error);
+    }
+  );
 }
 
 window.addEventListener("resize", onWindowResize, false);
