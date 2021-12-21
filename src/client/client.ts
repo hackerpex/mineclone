@@ -1,9 +1,11 @@
 import * as THREE from "three";
 import { Controls } from "./controls/controls";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { AnimationClip, AnimationMixer, LoopOnce, LoopRepeat } from "three";
 
 // SCENE
 const scene = new THREE.Scene();
+
 
 // CAMERA
 const camera = new THREE.PerspectiveCamera(
@@ -27,24 +29,42 @@ scene.add(controls.getLockControls().getObject());
 
 let cube: THREE.Object3D;
 
+let player: THREE.Object3D;
+
+
 // LIGHT
 const ambientLight = new THREE.AmbientLight(0xcccccc);
 scene.add(ambientLight);
+
 const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
 directionalLight.position.set(1, 1, 0.5).normalize();
 scene.add(directionalLight);
 
-const directionalLight1 = new THREE.DirectionalLight(0xffffff, 2);
-directionalLight1.position.set(5, 5, 0.5).normalize();
-scene.add(directionalLight1);
+
+
+const hemiLight = new THREE.HemisphereLight( 0xffffff, 0x444444 );
+				hemiLight.position.set( 0, 2, 0 );
+				scene.add( hemiLight );
+
+const dirLight = new THREE.DirectionalLight( 0xffffff );
+				dirLight.position.set( 0, 2, 1 );
+				scene.add( dirLight );
 
 // vars
+
+let mixer:AnimationMixer;
+let clips:any;
 
 const loader = new GLTFLoader();
 
 let prevTime = performance.now();
 const velocity = new THREE.Vector3();
 const direction = new THREE.Vector3();
+
+let walkAnimation;
+let runAnimation;
+let jumpAnimation;
+let beatAnimation;
 
 document.body.addEventListener("click", function () {
   controls.start();
@@ -53,26 +73,31 @@ document.body.addEventListener("click", function () {
 init();
 
 function init() {
-  const geometry = new THREE.BoxGeometry();
-  const material = new THREE.MeshBasicMaterial({
-    color: 0x00ff00,
-    wireframe: true,
-  });
 
-  cube = new THREE.Mesh(geometry, material);
-  scene.add(cube);
 
   loadPlayer();
 }
 
 function loadPlayer() {
-  const file = "./assets/models/steve/scene.gltf";
-  // const file ='./assets/models/monkey/monkey.gltf';
+    const file = "./assets/models/player/player.glb";
+
   loader.load(
     file,
     function (gltf) {
-      gltf.scene.scale.set(0.03, 0.03, 0.03); // scale here
-      scene.add(gltf.scene);
+        player = gltf.scene;
+        player.position.y = -1;
+        player.scale.set(0.39, 0.39, 0.39); // scale here
+         mixer = new THREE.AnimationMixer( player );
+         clips = gltf.animations;
+         console.log(clips);
+         walkAnimation = clips[10];
+         runAnimation = clips[6];
+         beatAnimation = clips[5];
+         jumpAnimation = clips[3];
+         mixer.clipAction(walkAnimation).setLoop(LoopRepeat,99999).play();
+  
+
+      scene.add(player);
     },
     (xhr) => {
       console.log("loaded", xhr.loaded);
@@ -97,8 +122,17 @@ function animate() {
   const time = performance.now();
   const delta = (time - prevTime) / 1000;
 
-  cube.rotation.x += 0.01;
-  cube.rotation.y += 0.01;
+  if(mixer){
+    mixer.update( delta );
+  } 
+
+  if(player){
+    player.rotation.y += 0.01;
+    //   player.rotation.x += 0.01;
+  } 
+
+
+ 
   controls.update(velocity, delta);
 
   prevTime = time;
