@@ -1,19 +1,23 @@
-import { Vector3, Raycaster } from "three";
+import { Vector3, Raycaster, Object3D } from "three";
 // @ts-ignore
 import { PointerLockControls } from "./PointerLockControls.js";
 
 // const PointerLockControls = require('PointerLockControls.js');
 
-let camera;
+let camera:Object3D;
 let element;
 let lockControls: PointerLockControls;
-
+let player:Object3D;
 let raycaster: Raycaster;
+
+
+
 
 class Controls {
   constructor(tCamera: any, tElement: any) {
     // console.log('LOG','initControls');
 
+    // player = tPlayer;
     camera = tCamera;
     element = tElement;
     lockControls = new PointerLockControls(camera, element);
@@ -31,12 +35,11 @@ class Controls {
   update(velocity: Vector3, delta: number) {
     // console.log('LOG','updateCamera');
 
-    velocity.x -= velocity.x * 1.0 * delta;
-    velocity.z -= velocity.z * 1.0 * delta;
+  
 
     //we will use soon
-    // const gravidade = 19.8 * 100.0 * delta;
-    // velocity.y -= gravidade;
+    const gravidade = 19.8 * 100.0 * delta;
+    velocity.y -= gravidade;
 
     raycaster.ray.origin.copy(lockControls.getObject().position);
     raycaster.ray.origin.x - velocity.x * delta;
@@ -44,8 +47,30 @@ class Controls {
     raycaster.ray.origin.z - velocity.z * delta;
 
     lockControls.moveRight(-velocity.x * delta);
-    lockControls.moveForward(-velocity.z * delta);
+     lockControls.moveForward(-velocity.z * delta);
+    // new behavior
   }
+
+   playerMoveRight ( player:Object3D, distance:number ) {
+    const _vector = new Vector3();
+    _vector.setFromMatrixColumn( camera.matrix, 0 );
+
+    camera.position.addScaledVector( _vector, distance );
+
+   }
+
+   playerMoveForward ( player:Object3D, distance:number ) {
+
+    const _vector = new Vector3();
+    _vector.setFromMatrixColumn( camera.matrix, 0 );
+
+    _vector.crossVectors( camera.up, _vector );
+
+    camera.position.addScaledVector( _vector, distance );
+
+    }
+
+
 }
 
 export { Controls };
