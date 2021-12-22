@@ -1,6 +1,7 @@
-// import * as THREE from "three";
 import { mergeBufferGeometries } from "../utils/BufferGeometryUtils.js";
 import {  Matrix4, Mesh, MeshLambertMaterial, NearestFilter, PlaneGeometry, Scene, Texture, TextureLoader,DoubleSide } from "three";
+import { Chunk } from "./Chunk.ts";
+import { Block } from "./Block.ts";
 
 const {SimplexNoise} = require('simplex-noise');
 
@@ -45,10 +46,15 @@ class World {
     console.log("criando mundo");
     this.createGeometries();
     this.loadTextures();
+
   
     const seed = 'myseed1';
     const simplex = new SimplexNoise(seed);
     const resolutionNoise = 0.05    ;
+
+    let chunck = new Chunk();
+
+
     let xOff = 0 ;
       for (let x = 0; x < chunkSize; x++) {
         let zOff = 0 ;
@@ -69,6 +75,7 @@ class World {
    
   createBlock(x:number,z:number,y:number){
 
+    
     matrix.makeTranslation(
         x * blockSize ,
         y * blockSize,
@@ -76,7 +83,10 @@ class World {
     );
     let geometries = [];
 
-    geometries.push( topGeometry.clone().applyMatrix4( matrix ) );
+    let block = new Block();
+
+    block.topGeometry = topGeometry.clone().applyMatrix4( matrix );
+    
     geometries.push( downGeometry.clone().applyMatrix4( matrix ) );
     geometries.push( leftGeometry.clone().applyMatrix4( matrix ) );
     geometries.push( rightGeometry.clone().applyMatrix4( matrix ) );
