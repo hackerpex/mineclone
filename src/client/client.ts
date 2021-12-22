@@ -15,7 +15,9 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   1000
 );
-camera.position.z = 2;
+camera.position.x = 50;
+camera.position.z = 60;
+camera.position.y = 30;
 
 // RENDER
 const renderer = new THREE.WebGLRenderer();
@@ -34,22 +36,25 @@ let player: THREE.Object3D;
 
 
 // LIGHT
+
+// addLights();
+
 const ambientLight = new THREE.AmbientLight(0xcccccc);
 scene.add(ambientLight);
 
 const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
-directionalLight.position.set(1, 1, 0.5).normalize();
+directionalLight.position.set(10, 10, 0.1).normalize();
 scene.add(directionalLight);
 
 
 
-const hemiLight = new THREE.HemisphereLight( 0xffffff, 0x444444 );
-				hemiLight.position.set( 0, 2, 0 );
-				scene.add( hemiLight );
+// const hemiLight = new THREE.HemisphereLight( 0xffffff, 0x444444 );
+// 				hemiLight.position.set( 0, 2, 0 );
+// 				scene.add( hemiLight );
 
-const dirLight = new THREE.DirectionalLight( 0xffffff );
-				dirLight.position.set( 0, 2, 1 );
-				scene.add( dirLight );
+// const dirLight = new THREE.DirectionalLight( 0xffffff );
+// 				dirLight.position.set( 10, 2, 1 );
+// 				scene.add( dirLight );
 
 // vars
 
@@ -160,6 +165,21 @@ function init() {
 
 }
 
+function addLights() {
+    const light = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.9);
+    scene.add(light);
+  
+    const directLight1 = new THREE.DirectionalLight(0xffd798, 0.8);
+    directLight1.castShadow = true;
+    directLight1.position.set(9.5, 8.2, 8.3);
+    scene.add(directLight1);
+  
+    const directLight2 = new THREE.DirectionalLight(0xc9ceff, 0.5);
+    directLight2.castShadow = true;
+    directLight2.position.set(-15.8, 5.2, 8);
+    scene.add(directLight2);
+  }
+
 function loadPlayer() {
     const file = "./assets/models/player/player.glb";
 
@@ -167,8 +187,8 @@ function loadPlayer() {
     file,
     function (gltf) {
          player = gltf.scene;
-         player.position.y = -1;
-         player.scale.set(10, 10, 10); // scale here
+         player.position.y = 20;
+         player.scale.set(1, 1, 1); // scale here
          mixer = new THREE.AnimationMixer( player );
          clips = gltf.animations;
          console.log(clips);

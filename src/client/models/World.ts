@@ -2,15 +2,21 @@
 import { mergeBufferGeometries } from "../utils/BufferGeometryUtils.js";
 import {  Matrix4, Mesh, MeshLambertMaterial, NearestFilter, PlaneGeometry, Scene, Texture, TextureLoader,DoubleSide } from "three";
 
+import {PerlinNoise3D} from '../utils/PerlinNoise3D.ts';
+// import SimplexNoise from 'simplex-noise';
+const {SimplexNoise} = require('simplex-noise');
+
+//https://www.diva-portal.org/smash/get/diva2:1355216/FULLTEXT01.pdf
+
 let chunks = [];
 let scene:Scene;
 
 const worldWidth = 1,
   worldDepth = 1;
-const chunkSize = 16;
-const chunkHeigh = 256;
+const chunkSize =32;
+const chunkHeigh = 10;
 
-const blockSize = 100;
+const blockSize = 10;
 
 const matrix = new Matrix4();
 
@@ -20,7 +26,15 @@ let leftGeometry:PlaneGeometry;
 let rightGeometry:PlaneGeometry;
 let frontGeometry:PlaneGeometry;
 let backGeometry:PlaneGeometry;
-
+const neighborOffsets = [
+    [ 0,  0,  0], // self
+    [-1,  0,  0], // left
+    [ 1,  0,  0], // right
+    [ 0, -1,  0], // down
+    [ 0,  1,  0], // up
+    [ 0,  0, -1], // back
+    [ 0,  0,  1], // front
+  ];
 
 
 
@@ -33,14 +47,25 @@ class World {
     console.log("criando mundo");
     this.createGeometries();
     this.loadTextures();
-
-    for (let y = 0; y < chunkSize; y++) {
+  
+    const seed = 'myseed1';
+    const simplex = new SimplexNoise(seed);
+    const resolutionNoise = 0.05    ;
+    let xOff = 0 ;
       for (let x = 0; x < chunkSize; x++) {
+        let zOff = 0 ;
         for (let z = 0; z < chunkSize; z++) {
-            const block =  this.createBlock(x,z,y);
-
-        }
+             let yOff = 0 ;
+             for (let y = 0; y < chunkHeigh; y++) {
+                const value3d = simplex.noise3D(xOff, yOff, zOff);
+                 if(value3d <= 0.3){
+                    const block =  this.createBlock(x,z,y);
+                 }
+                 yOff += resolutionNoise;
+             }
+            zOff += resolutionNoise;
       }
+      xOff += resolutionNoise;
     }
   }
    
@@ -72,13 +97,14 @@ class World {
 
         
         scene.add( mesh );
-        // let  block = {'x':x,'z':z,'y':y,'id':0x0001,'mesh':mesh} ;
-        // return block;
+
 
 }
 
   createGeometries(){
-    topGeometry = new PlaneGeometry(100, 100);
+
+    var block_half = blockSize/2;
+    topGeometry = new PlaneGeometry(blockSize, blockSize);
     const uvs = topGeometry.attributes.uv.array;
     console.log(uvs);
     // @ts-ignore
@@ -86,12 +112,12 @@ class World {
     // @ts-ignore
     topGeometry.attributes.uv.array[6] = 0.1;
     
-    topGeometry.translate(0, 0, 50);
+    topGeometry.translate(0, 0, block_half);
     topGeometry.rotateX(-Math.PI / 2);
     topGeometry.rotateY(Math.PI);
     topGeometry.rotateY(Math.PI);
     
-     downGeometry = new PlaneGeometry(100, 100);
+     downGeometry = new PlaneGeometry(blockSize, blockSize);
     // @ts-ignore
     downGeometry.attributes.uv.array[0] = 0.1;
     // @ts-ignore
@@ -101,12 +127,12 @@ class World {
     // @ts-ignore
     downGeometry.attributes.uv.array[6] = 0.2;
     
-    downGeometry.translate(0, 0, 50);
+    downGeometry.translate(0, 0, block_half);
     downGeometry.rotateX(Math.PI / 2);
     downGeometry.rotateY(Math.PI);
     downGeometry.rotateY(Math.PI);
     
-     leftGeometry = new PlaneGeometry(100, 100);
+     leftGeometry = new PlaneGeometry(blockSize, blockSize);
     // @ts-ignore
     leftGeometry.attributes.uv.array[0] = 0.2;
     // @ts-ignore
@@ -116,10 +142,10 @@ class World {
     // @ts-ignore
     leftGeometry.attributes.uv.array[6] = 0.3;
     
-    leftGeometry.translate(0, 0, 50);
+    leftGeometry.translate(0, 0, block_half);
     leftGeometry.rotateY(-Math.PI / 2);
     
-     rightGeometry = new PlaneGeometry(100, 100);
+     rightGeometry = new PlaneGeometry(blockSize, blockSize);
     // @ts-ignore
     rightGeometry.attributes.uv.array[0] = 0.3;
     // @ts-ignore
@@ -129,11 +155,11 @@ class World {
     // @ts-ignore
     rightGeometry.attributes.uv.array[6] = 0.4;
     
-    rightGeometry.translate(0, 0, 50);
+    rightGeometry.translate(0, 0, block_half);
     
     rightGeometry.rotateY(Math.PI / 2);
     
-     frontGeometry = new PlaneGeometry(100, 100);
+     frontGeometry = new PlaneGeometry(blockSize, blockSize);
     // @ts-ignore
     frontGeometry.attributes.uv.array[0] = 0.4;
     // @ts-ignore
@@ -143,9 +169,9 @@ class World {
     // @ts-ignore
     frontGeometry.attributes.uv.array[6] = 0.5;
     
-    frontGeometry.translate(0, 0, -50);
+    frontGeometry.translate(0, 0, -block_half);
     
-     backGeometry = new PlaneGeometry(100, 100);
+     backGeometry = new PlaneGeometry(blockSize, blockSize);
     // @ts-ignore
     backGeometry.attributes.uv.array[0] = 0.5;
     // @ts-ignore
@@ -155,7 +181,7 @@ class World {
     // @ts-ignore
     backGeometry.attributes.uv.array[6] = 0.6;
     
-    backGeometry.translate(0, 0, 50);
+    backGeometry.translate(0, 0, block_half);
   }
   loadTextures(){
     const texture_path = "../assets/textures/";
@@ -166,6 +192,10 @@ class World {
     );
     textures[0].magFilter = NearestFilter;
   }
+
+ 
 }
+
+
 
 export { World };
