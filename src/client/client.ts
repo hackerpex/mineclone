@@ -1,15 +1,21 @@
-import * as THREE from "three";
+
 import { Controls } from "./controls/controls";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import { AnimationClip, AnimationMixer, LoopOnce, LoopRepeat } from "three";
+import { AmbientLight, AnimationClip, AnimationMixer, DirectionalLight, HemisphereLight, LoopOnce, LoopRepeat, PerspectiveCamera, Scene, Vector3, WebGLRenderer } from "three";
 import { World } from "./models/World";
+import * as Stats from 'stats.js';
 
 // SCENE
-const scene = new THREE.Scene();
+const scene = new Scene();
+
+//STATS
+var stats = new Stats();
+stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+document.body.appendChild(stats.dom);  // <-- remove me
 
 
 // CAMERA
-const camera = new THREE.PerspectiveCamera(
+const camera = new PerspectiveCamera(
   75,
   window.innerWidth / window.innerHeight,
   0.1,
@@ -20,7 +26,7 @@ camera.position.z = 60;
 camera.position.y = 30;
 
 // RENDER
-const renderer = new THREE.WebGLRenderer();
+const renderer = new WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
@@ -39,10 +45,10 @@ let player: THREE.Object3D;
 
 // addLights();
 
-const ambientLight = new THREE.AmbientLight(0xcccccc);
+const ambientLight = new AmbientLight(0xcccccc);
 scene.add(ambientLight);
 
-const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
+const directionalLight = new DirectionalLight(0xffffff, 2);
 directionalLight.position.set(10, 10, 0.1).normalize();
 scene.add(directionalLight);
 
@@ -64,8 +70,8 @@ let clips:any;
 const loader = new GLTFLoader();
 
 let prevTime = performance.now();
-const velocity = new THREE.Vector3();
-const direction = new THREE.Vector3();
+const velocity = new Vector3();
+const direction = new Vector3();
 
 let walkAnimation;
 let runAnimation;
@@ -166,15 +172,15 @@ function init() {
 }
 
 function addLights() {
-    const light = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.9);
+    const light = new HemisphereLight(0xffffff, 0xffffff, 0.9);
     scene.add(light);
   
-    const directLight1 = new THREE.DirectionalLight(0xffd798, 0.8);
+    const directLight1 = new DirectionalLight(0xffd798, 0.8);
     directLight1.castShadow = true;
     directLight1.position.set(9.5, 8.2, 8.3);
     scene.add(directLight1);
   
-    const directLight2 = new THREE.DirectionalLight(0xc9ceff, 0.5);
+    const directLight2 = new DirectionalLight(0xc9ceff, 0.5);
     directLight2.castShadow = true;
     directLight2.position.set(-15.8, 5.2, 8);
     scene.add(directLight2);
@@ -189,7 +195,7 @@ function loadPlayer() {
          player = gltf.scene;
          player.position.y = 20;
          player.scale.set(1, 1, 1); // scale here
-         mixer = new THREE.AnimationMixer( player );
+         mixer = new AnimationMixer( player );
          clips = gltf.animations;
          console.log(clips);
          walkAnimation = clips[10];
@@ -285,6 +291,7 @@ function animate() {
 
 function render() {
   renderer.render(scene, camera);
+  stats.update();
 }
 
 animate();

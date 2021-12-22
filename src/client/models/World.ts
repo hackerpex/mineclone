@@ -2,8 +2,6 @@
 import { mergeBufferGeometries } from "../utils/BufferGeometryUtils.js";
 import {  Matrix4, Mesh, MeshLambertMaterial, NearestFilter, PlaneGeometry, Scene, Texture, TextureLoader,DoubleSide } from "three";
 
-import {PerlinNoise3D} from '../utils/PerlinNoise3D.ts';
-// import SimplexNoise from 'simplex-noise';
 const {SimplexNoise} = require('simplex-noise');
 
 //https://www.diva-portal.org/smash/get/diva2:1355216/FULLTEXT01.pdf
