@@ -23,7 +23,7 @@ const camera = new PerspectiveCamera(
 );
 camera.position.x = 50;
 camera.position.z = 60;
-camera.position.y = 30;
+camera.position.y = 50*10;
 
 // RENDER
 const renderer = new WebGLRenderer();

@@ -3,17 +3,12 @@ import { BlockType } from "./BlockType";
 
 
 class Block {
-    type?:BlockType;
-    topGeometry?:BufferGeometry;
-    downGeometry?:BufferGeometry;
-    leftGeometry?:BufferGeometry;
-    rightGeometry?:BufferGeometry;
-    frontGeometry?:BufferGeometry;
-    backGeometry?:BufferGeometry;
+    id:any;
+    code:number;
     
     constructor(){
-        this.type = new BlockType();
-        
+        this.id ='';
+        this.code = 0;
     }
 
    

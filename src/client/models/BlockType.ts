@@ -20,10 +20,12 @@
 
 class BlockType {
     id:number = 0;
-    name:string = 'air';
-    constructor(){
-        
+    code:number = 0;
+    constructor(id:any,code:number){
+        this.id = id;
+        this.code = code;        
     }
+  
 }
 export {
     BlockType
