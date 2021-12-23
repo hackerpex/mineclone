@@ -8,16 +8,9 @@ const {SimplexNoise} = require('simplex-noise');
 
 
 
-const blockSize = 10;
 
-const matrix = new Matrix4();
 
-let topGeometry:PlaneGeometry;
-let downGeometry:PlaneGeometry;
-let leftGeometry:PlaneGeometry;
-let rightGeometry:PlaneGeometry;
-let frontGeometry:PlaneGeometry;
-let backGeometry:PlaneGeometry;
+
 
 
 const neighborOffsets = [
@@ -34,15 +27,40 @@ const neighborOffsets = [
 
 
 
-class Chunk {
-    size :number = 8;
-    heigth:number = 256;
+export class Chunk {
+    posX:number =0;
+    posZ:number =0;
+    // size :number = 2;
+    blockSize = 10;
+    heigth:number = 50;
     blocks = [] as  any;
-    seaLevel =40;
+    meshList = [] as  any;
+    
+    seaLevel =10;
     textures = [] ;
     scene?:Scene;
-    constructor(){
+
+     matrix = new Matrix4();
+
+ topGeometry:PlaneGeometry;
+ downGeometry:PlaneGeometry;
+ leftGeometry:PlaneGeometry;
+ rightGeometry:PlaneGeometry;
+ frontGeometry:PlaneGeometry;
+ backGeometry:PlaneGeometry;
+
+    constructor(x:number,z:number){
+        this.posX =x;
+        this.posZ =z;
         this.createGeometries();
+    }
+
+    clean(){
+        this.meshList.forEach(element => {            
+            this.scene.remove(element);
+        });
+        
+        
     }
 
     generateChunk(scene:Scene, noise:any, textures:[]){
@@ -50,11 +68,11 @@ class Chunk {
         this.textures = textures;
         const resolutionNoise = 0.05 
         
-        let xOff = 0 ;
-        for ( let x = 0; x < this.size; x ++ ) {
-            let zOff = 0 ;
+        let xOff = this.posX * this.blockSize * resolutionNoise ;
+        for ( let x = this.posX*this.blockSize; x < this.posX*this.blockSize +this.blockSize; x ++ ) {
+            let zOff = this.posZ * this.blockSize * resolutionNoise;
             this.blocks[x]= [];
-            for ( let z = 0; z < this.size; z ++ ) {
+            for ( let z = this.posZ*this.blockSize; z < this.posZ*this.blockSize + this.blockSize; z ++ ) {
                 let yOff = 0 ;
                 this.blocks[x][z]= [];
                 for ( let y = 0; y < this.heigth; y ++ ) {
@@ -65,8 +83,7 @@ class Chunk {
                        block.code = 1;
                     }
                     if (y >= this.seaLevel){
-                        block.code = 0;
-                        // console.log('v:',value2d);
+                        block.code = 0;                        
                          if( (y - this.seaLevel) < Math.floor(value2d*10) ){
                             block.code = 1;
                         }
@@ -75,6 +92,7 @@ class Chunk {
                     }
 
                     this.blocks[x][z][y]= block;
+                    
                     yOff += resolutionNoise;    
                 }
                 zOff += resolutionNoise;   
@@ -88,74 +106,74 @@ class Chunk {
 
     generateMesh(){
         
-        for ( let x = 0; x < this.size; x ++ ) {
+        for ( let x = this.posX*this.blockSize; x < this.posX*this.blockSize +this.blockSize; x ++ ) {
             
-            for ( let z = 0; z < this.size; z ++ ) {
+            for ( let z = this.posZ*this.blockSize; z < this.posZ*this.blockSize + this.blockSize; z ++ ) {
             
                 for ( let y = 0; y < this.heigth; y ++ ) {
-                    let block = this.blocks[x][z][y];
+                    let block:Block = this.blocks[x][z][y];
                     let geometries = [];
-                    matrix.makeTranslation(
-                        x * blockSize ,
-                        y * blockSize,
-                        z * blockSize 
+                    this.matrix.makeTranslation(
+                        x * this.blockSize ,
+                        y * this.blockSize,
+                        z * this.blockSize 
                     );
                 
                     //check if draw
                     //TOP
                     try {
                         if(this.needsToDrawFace(this.blocks[x+neighborOffsets[0][0]][z+neighborOffsets[0][1]][y+neighborOffsets[0][2]])){
-                            geometries.push(topGeometry.clone().applyMatrix4( matrix ))
+                            geometries.push(this.topGeometry.clone().applyMatrix4( this.matrix ))
                         }
                             
                     } catch (error) {
-                        geometries.push(topGeometry.clone().applyMatrix4( matrix ))
+                        geometries.push(this.topGeometry.clone().applyMatrix4( this.matrix ))
                     }
                     //DOWN
                     try {
                         if(this.needsToDrawFace(this.blocks[x+neighborOffsets[1][0]][z+neighborOffsets[1][1]][y+neighborOffsets[1][2]])){
-                            geometries.push(downGeometry.clone().applyMatrix4( matrix ))
+                            geometries.push(this.downGeometry.clone().applyMatrix4( this.matrix ))
                         }
                             
                     } catch (error) {
-                        geometries.push(downGeometry.clone().applyMatrix4( matrix ))
+                        geometries.push(this.downGeometry.clone().applyMatrix4( this.matrix ))
                     }
                     //LEFT
                     try {
                         if(this.needsToDrawFace(this.blocks[x+neighborOffsets[2][0]][z+neighborOffsets[2][1]][y+neighborOffsets[2][2]])){
-                            geometries.push(leftGeometry.clone().applyMatrix4( matrix ))
+                            geometries.push(this.leftGeometry.clone().applyMatrix4( this.matrix ))
                         }
                             
                     } catch (error) {
-                        geometries.push(leftGeometry.clone().applyMatrix4( matrix ))
+                        geometries.push(this.leftGeometry.clone().applyMatrix4( this.matrix ))
                     }
                     //RIGHT
                     try {
                         if(this.needsToDrawFace(this.blocks[x+neighborOffsets[3][0]][z+neighborOffsets[3][1]][y+neighborOffsets[3][2]])){
-                            geometries.push(rightGeometry.clone().applyMatrix4( matrix ))
+                            geometries.push(this.rightGeometry.clone().applyMatrix4( this.matrix ))
                         }
                             
                     } catch (error) {
-                        geometries.push(rightGeometry.clone().applyMatrix4( matrix ))
+                        geometries.push(this.rightGeometry.clone().applyMatrix4( this.matrix ))
                     }
 
                     //FRONT
                     try {
                         if(this.needsToDrawFace(this.blocks[x+neighborOffsets[4][0]][z+neighborOffsets[4][1]][y+neighborOffsets[4][2]])){
-                            geometries.push(frontGeometry.clone().applyMatrix4( matrix ))
+                            geometries.push(this.frontGeometry.clone().applyMatrix4( this.matrix ))
                         }
                             
                     } catch (error) {
-                        geometries.push(frontGeometry.clone().applyMatrix4( matrix ))
+                        geometries.push(this.frontGeometry.clone().applyMatrix4( this.matrix ))
                     }
                     //BACK
                     try {
                         if(this.needsToDrawFace(this.blocks[x+neighborOffsets[5][0]][z+neighborOffsets[5][1]][y+neighborOffsets[5][2]])){
-                            geometries.push(backGeometry.clone().applyMatrix4( matrix ))
+                            geometries.push(this.backGeometry.clone().applyMatrix4( this.matrix ))
                         }
                             
                     } catch (error) {
-                        geometries.push(backGeometry.clone().applyMatrix4( matrix ))
+                        geometries.push(this.backGeometry.clone().applyMatrix4( this.matrix ))
                     }
 
                     if (geometries.length > 0){
@@ -168,6 +186,9 @@ class Chunk {
                             const mesh = new Mesh( geometry, new MeshLambertMaterial( { map:texture, side: DoubleSide } ) );
                             mesh.name = "teste";
                             this.scene!.add( mesh );
+                            block.setMesh(mesh);
+                            
+                            this.meshList.push(mesh);
                             
                         }
                       
@@ -198,88 +219,85 @@ class Chunk {
 
     createGeometries(){
 
-        var block_half = blockSize/2;
-        topGeometry = new PlaneGeometry(blockSize, blockSize);
-        const uvs = topGeometry.attributes.uv.array;
-        console.log(uvs);
+        var block_half = this.blockSize/2;
+        this.topGeometry = new PlaneGeometry(this.blockSize, this.blockSize);
+        const uvs = this.topGeometry.attributes.uv.array;
+        // console.log(uvs);
         // @ts-ignore
-        topGeometry.attributes.uv.array[2] = 0.1;
+        this.topGeometry.attributes.uv.array[2] = 0.1;
         // @ts-ignore
-        topGeometry.attributes.uv.array[6] = 0.1;
+        this.topGeometry.attributes.uv.array[6] = 0.1;
         
-        topGeometry.translate(0, 0, block_half);
-        topGeometry.rotateX(-Math.PI / 2);
-        topGeometry.rotateY(Math.PI);
-        topGeometry.rotateY(Math.PI);
+        this.topGeometry.translate(0, 0, block_half);
+        this.topGeometry.rotateX(-Math.PI / 2);
+        this.topGeometry.rotateY(Math.PI);
+        this.topGeometry.rotateY(Math.PI);
         
-         downGeometry = new PlaneGeometry(blockSize, blockSize);
+        this.downGeometry = new PlaneGeometry(this.blockSize, this.blockSize);
         // @ts-ignore
-        downGeometry.attributes.uv.array[0] = 0.1;
+        this.downGeometry.attributes.uv.array[0] = 0.1;
         // @ts-ignore
-        downGeometry.attributes.uv.array[2] = 0.2;
+        this.downGeometry.attributes.uv.array[2] = 0.2;
         // @ts-ignore
-        downGeometry.attributes.uv.array[4] = 0.1;
+        this.downGeometry.attributes.uv.array[4] = 0.1;
         // @ts-ignore
-        downGeometry.attributes.uv.array[6] = 0.2;
+        this.downGeometry.attributes.uv.array[6] = 0.2;
         
-        downGeometry.translate(0, 0, block_half);
-        downGeometry.rotateX(Math.PI / 2);
-        downGeometry.rotateY(Math.PI);
-        downGeometry.rotateY(Math.PI);
+        this.downGeometry.translate(0, 0, block_half);
+        this.downGeometry.rotateX(Math.PI / 2);
+        this.downGeometry.rotateY(Math.PI);
+        this.downGeometry.rotateY(Math.PI);
         
-         leftGeometry = new PlaneGeometry(blockSize, blockSize);
+        this.leftGeometry = new PlaneGeometry(this.blockSize, this.blockSize);
         // @ts-ignore
-        leftGeometry.attributes.uv.array[0] = 0.2;
+        this.leftGeometry.attributes.uv.array[0] = 0.2;
         // @ts-ignore
-        leftGeometry.attributes.uv.array[2] = 0.3;
+        this.leftGeometry.attributes.uv.array[2] = 0.3;
         // @ts-ignore
-        leftGeometry.attributes.uv.array[4] = 0.2;
+        this.leftGeometry.attributes.uv.array[4] = 0.2;
         // @ts-ignore
-        leftGeometry.attributes.uv.array[6] = 0.3;
+        this.leftGeometry.attributes.uv.array[6] = 0.3;
         
-        leftGeometry.translate(0, 0, block_half);
-        leftGeometry.rotateY(-Math.PI / 2);
+        this.leftGeometry.translate(0, 0, block_half);
+        this.leftGeometry.rotateY(-Math.PI / 2);
         
-         rightGeometry = new PlaneGeometry(blockSize, blockSize);
+        this.rightGeometry = new PlaneGeometry(this.blockSize, this.blockSize);
         // @ts-ignore
-        rightGeometry.attributes.uv.array[0] = 0.3;
+        this.rightGeometry.attributes.uv.array[0] = 0.3;
         // @ts-ignore
-        rightGeometry.attributes.uv.array[2] = 0.4;
+        this.rightGeometry.attributes.uv.array[2] = 0.4;
         // @ts-ignore
-        rightGeometry.attributes.uv.array[4] = 0.3;
+        this.rightGeometry.attributes.uv.array[4] = 0.3;
         // @ts-ignore
-        rightGeometry.attributes.uv.array[6] = 0.4;
+        this.rightGeometry.attributes.uv.array[6] = 0.4;
         
-        rightGeometry.translate(0, 0, block_half);
+        this.rightGeometry.translate(0, 0, block_half);
         
-        rightGeometry.rotateY(Math.PI / 2);
+        this.rightGeometry.rotateY(Math.PI / 2);
         
-         frontGeometry = new PlaneGeometry(blockSize, blockSize);
+        this.frontGeometry = new PlaneGeometry(this.blockSize, this.blockSize);
         // @ts-ignore
-        frontGeometry.attributes.uv.array[0] = 0.4;
+        this.frontGeometry.attributes.uv.array[0] = 0.4;
         // @ts-ignore
-        frontGeometry.attributes.uv.array[2] = 0.5;
+        this.frontGeometry.attributes.uv.array[2] = 0.5;
         // @ts-ignore
-        frontGeometry.attributes.uv.array[4] = 0.4;
+        this.frontGeometry.attributes.uv.array[4] = 0.4;
         // @ts-ignore
-        frontGeometry.attributes.uv.array[6] = 0.5;
+        this.frontGeometry.attributes.uv.array[6] = 0.5;
         
-        frontGeometry.translate(0, 0, -block_half);
+        this.frontGeometry.translate(0, 0, -block_half);
         
-         backGeometry = new PlaneGeometry(blockSize, blockSize);
+        this.backGeometry = new PlaneGeometry(this.blockSize, this.blockSize);
         // @ts-ignore
-        backGeometry.attributes.uv.array[0] = 0.5;
+        this.backGeometry.attributes.uv.array[0] = 0.5;
         // @ts-ignore
-        backGeometry.attributes.uv.array[2] = 0.6;
+        this.backGeometry.attributes.uv.array[2] = 0.6;
         // @ts-ignore
-        backGeometry.attributes.uv.array[4] = 0.5;
+        this.backGeometry.attributes.uv.array[4] = 0.5;
         // @ts-ignore
-        backGeometry.attributes.uv.array[6] = 0.6;
+        this.backGeometry.attributes.uv.array[6] = 0.6;
         
-        backGeometry.translate(0, 0, block_half);
+        this.backGeometry.translate(0, 0, block_half);
       }
 
 }
-export {
-    Chunk
-};

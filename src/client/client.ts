@@ -23,7 +23,7 @@ const camera = new PerspectiveCamera(
 );
 camera.position.x = 50;
 camera.position.z = 60;
-camera.position.y = 50*10;
+camera.position.y = 25*10;
 
 // RENDER
 const renderer = new WebGLRenderer();
@@ -72,6 +72,7 @@ const loader = new GLTFLoader();
 let prevTime = performance.now();
 const velocity = new Vector3();
 const direction = new Vector3();
+const position = new Vector3();
 
 let walkAnimation;
 let runAnimation;
@@ -84,7 +85,7 @@ let moveLeft = false;
 let moveRight = false;
 let canJump = false;
 
-let world;
+let world:World;
 
 document.body.addEventListener("click", function () {
   controls.start();
@@ -162,7 +163,7 @@ init();
 function init() {
 
 
- world = new World(scene);
+ world = new World(scene,camera);
 
   loadPlayer();
 
@@ -197,7 +198,7 @@ function loadPlayer() {
          player.scale.set(1, 1, 1); // scale here
          mixer = new AnimationMixer( player );
          clips = gltf.animations;
-         console.log(clips);
+        //  console.log(clips);
          walkAnimation = clips[10];
          runAnimation = clips[6];
          beatAnimation = clips[5];
@@ -208,7 +209,7 @@ function loadPlayer() {
       scene.add(player);
     },
     (xhr) => {
-      console.log("loaded", xhr.loaded);
+      // console.log("loaded", xhr.loaded);
     },
     (error) => {
       console.log("erro", error);
@@ -277,6 +278,10 @@ function animate() {
 //   player.position.x += velocity.x;
 //   player.position.z += velocity.z;
 //   lockControls.getObject().position.y +=  ( velocity.y * delta );
+
+if(controls != null && controls.getPlayerPosition() != null ){
+  world.updateWorld(controls.getPlayerPosition(),direction);
+}
 
 
   prevTime = time;

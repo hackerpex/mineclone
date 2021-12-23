@@ -70,6 +70,10 @@ class Controls {
 
     }
 
+  getPlayerPosition(){
+    return camera.position;
+  }
+
 
 }
 
