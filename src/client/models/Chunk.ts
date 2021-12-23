@@ -1,12 +1,13 @@
-import { DoubleSide, Matrix4, Mesh, MeshLambertMaterial, PlaneGeometry, Scene, Texture } from "three";
+import { DoubleSide, Matrix4, Mesh, MeshLambertMaterial, Object3D, PlaneGeometry, Scene, Texture } from "three";
 import { Block } from "./Block";
 import { mergeBufferGeometries } from "../utils/BufferGeometryUtils.js";
 import { BlockType } from "./BlockType";
 
 const {SimplexNoise} = require('simplex-noise');
 
-
-
+// const {
+//     Worker, isMainThread, parentPort, workerData
+//   } = require('worker_threads');
 
 
 
@@ -30,13 +31,13 @@ const neighborOffsets = [
 export class Chunk {
     posX:number =0;
     posZ:number =0;
-    // size :number = 2;
-    blockSize = 10;
-    heigth:number = 50;
+    chunkSize:number = 10;
+    blockSize:number = 10;
+    heigth:number = 10;
     blocks = [] as  any;
-    meshList = [] as  any;
+    meshList :Object3D[] = [];
     
-    seaLevel =10;
+    seaLevel =3;
     textures = [] ;
     scene?:Scene;
 
@@ -49,15 +50,18 @@ export class Chunk {
  frontGeometry:PlaneGeometry;
  backGeometry:PlaneGeometry;
 
-    constructor(x:number,z:number){
+    constructor(x:number,z:number,chunkSize:number,blockSize:number){
         this.posX =x;
         this.posZ =z;
+        this.chunkSize = chunkSize;
+        this.blockSize = blockSize;
         this.createGeometries();
     }
 
     clean(){
+        
         this.meshList.forEach(element => {            
-            this.scene.remove(element);
+             element.removeFromParent();
         });
         
         
@@ -68,11 +72,11 @@ export class Chunk {
         this.textures = textures;
         const resolutionNoise = 0.05 
         
-        let xOff = this.posX * this.blockSize * resolutionNoise ;
-        for ( let x = this.posX*this.blockSize; x < this.posX*this.blockSize +this.blockSize; x ++ ) {
-            let zOff = this.posZ * this.blockSize * resolutionNoise;
+        let xOff = this.posX * this.chunkSize * resolutionNoise ;
+        for ( let x = this.posX*this.chunkSize; x < this.posX*this.chunkSize +this.chunkSize; x ++ ) {
+            let zOff = this.posZ * this.chunkSize * resolutionNoise;
             this.blocks[x]= [];
-            for ( let z = this.posZ*this.blockSize; z < this.posZ*this.blockSize + this.blockSize; z ++ ) {
+            for ( let z = this.posZ*this.chunkSize; z < this.posZ*this.chunkSize + this.chunkSize; z ++ ) {
                 let yOff = 0 ;
                 this.blocks[x][z]= [];
                 for ( let y = 0; y < this.heigth; y ++ ) {
@@ -87,8 +91,9 @@ export class Chunk {
                          if( (y - this.seaLevel) < Math.floor(value2d*10) ){
                             block.code = 1;
                         }
-                       
-                        
+                    }
+                    if (y == 0){
+                        block.code = 10000;                        
                     }
 
                     this.blocks[x][z][y]= block;
@@ -106,9 +111,9 @@ export class Chunk {
 
     generateMesh(){
         
-        for ( let x = this.posX*this.blockSize; x < this.posX*this.blockSize +this.blockSize; x ++ ) {
+        for ( let x = this.posX*this.chunkSize; x < this.posX*this.chunkSize +this.chunkSize; x ++ ) {
             
-            for ( let z = this.posZ*this.blockSize; z < this.posZ*this.blockSize + this.blockSize; z ++ ) {
+            for ( let z = this.posZ*this.chunkSize; z < this.posZ*this.chunkSize + this.chunkSize; z ++ ) {
             
                 for ( let y = 0; y < this.heigth; y ++ ) {
                     let block:Block = this.blocks[x][z][y];
@@ -181,16 +186,19 @@ export class Chunk {
                         geometry.computeBoundingSphere();
                
                         let texture = this.textures[0];
-                        if(block.code == 1){
-                            texture = this.textures[0];
+                        if(block.code == 0){
+                        }
+                        else
+                        {
+                            texture = this.textures[block.code];
                             const mesh = new Mesh( geometry, new MeshLambertMaterial( { map:texture, side: DoubleSide } ) );
                             mesh.name = "teste";
                             this.scene!.add( mesh );
-                            block.setMesh(mesh);
-                            
+                            block.setMesh(mesh);                            
                             this.meshList.push(mesh);
-                            
                         }
+
+                    
                       
                        
                     }

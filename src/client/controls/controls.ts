@@ -35,7 +35,10 @@ class Controls {
   update(velocity: Vector3, delta: number) {
     // console.log('LOG','updateCamera');
 
-  
+    velocity.x = Math.min(velocity.x, 100);
+    velocity.z = Math.min(velocity.z, 100);
+    velocity.x = Math.max(velocity.x, -100);
+    velocity.z = Math.max(velocity.z, -100);
 
     //we will use soon
     const gravidade = 19.8 * 100.0 * delta;
@@ -56,6 +59,8 @@ class Controls {
     _vector.setFromMatrixColumn( camera.matrix, 0 );
 
     camera.position.addScaledVector( _vector, distance );
+
+   
 
    }
 

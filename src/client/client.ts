@@ -23,7 +23,7 @@ const camera = new PerspectiveCamera(
 );
 camera.position.x = 50;
 camera.position.z = 60;
-camera.position.y = 25*10;
+camera.position.y = 10*8;
 
 // RENDER
 const renderer = new WebGLRenderer();
@@ -45,18 +45,18 @@ let player: THREE.Object3D;
 
 // addLights();
 
-const ambientLight = new AmbientLight(0xcccccc);
+const ambientLight = new AmbientLight(0x888888);
 scene.add(ambientLight);
 
-const directionalLight = new DirectionalLight(0xffffff, 2);
-directionalLight.position.set(10, 10, 0.1).normalize();
+const directionalLight = new DirectionalLight(0x666666, 2);
+directionalLight.position.set(100, 100, 0.1).normalize();
 scene.add(directionalLight);
 
 
 
-// const hemiLight = new THREE.HemisphereLight( 0xffffff, 0x444444 );
-// 				hemiLight.position.set( 0, 2, 0 );
-// 				scene.add( hemiLight );
+const hemiLight = new HemisphereLight( 0x888888, 0x444444 );
+				hemiLight.position.set( 0, 2, 0 );
+				scene.add( hemiLight );
 
 // const dirLight = new THREE.DirectionalLight( 0xffffff );
 // 				dirLight.position.set( 10, 2, 1 );
@@ -226,6 +226,8 @@ function onWindowResize() {
 }
 
 function animate() {
+
+  // console.log('start frame');
   requestAnimationFrame(animate);
 
   const time = performance.now();
@@ -273,7 +275,7 @@ function animate() {
 
   controls.update(velocity, delta);
 
-
+  // console.log('criando chunk X:',controls.getPlayerPosition().x,'Z:',controls.getPlayerPosition().z);
 
 //   player.position.x += velocity.x;
 //   player.position.z += velocity.z;
@@ -285,13 +287,10 @@ if(controls != null && controls.getPlayerPosition() != null ){
 
 
   prevTime = time;
-
-
-
-
-
-
+  // console.log('start render');
   render();
+
+  // console.log('end frame');
 }
 
 function render() {
