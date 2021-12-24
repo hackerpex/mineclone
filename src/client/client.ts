@@ -1,7 +1,7 @@
 
 import { Controls } from "./controls/controls";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import { AmbientLight, AnimationClip, AnimationMixer, DirectionalLight, HemisphereLight, LoopOnce, LoopRepeat, PerspectiveCamera, Scene, Vector3, WebGLRenderer } from "three";
+import { AmbientLight, AnimationClip, AnimationMixer, DirectionalLight, Fog, HemisphereLight, LoopOnce, LoopRepeat, PerspectiveCamera, Scene, Vector3, WebGLRenderer } from "three";
 import { World } from "./models/World";
 import * as Stats from 'stats.js';
 
@@ -24,6 +24,7 @@ const camera = new PerspectiveCamera(
 camera.position.x = 50;
 camera.position.z = 60;
 camera.position.y = 10*8;
+
 
 // RENDER
 const renderer = new WebGLRenderer();

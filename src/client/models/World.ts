@@ -11,6 +11,7 @@ import {
   DoubleSide,
   Vector3,
   Object3D,
+  Fog,
 } from "three";
 import { Chunk } from "./Chunk.ts";
 import { Block } from "./Block.ts";
@@ -36,6 +37,10 @@ export class World {
     this.camera = camera;
 
     this.loadTextures();
+
+    //FOG
+    scene.fog = new Fog( 0x000000, 40, 110 );
+
   }
   updateWorld(f: Vector3, direction: Vector3) {
     const realX = Math.floor(
