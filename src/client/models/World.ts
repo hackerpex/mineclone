@@ -25,9 +25,9 @@ export class World {
   textures: Texture[] = [];
   scene: Scene;
   camera: Object3D;
-  chunkSize = 16;
-  blockSize = 10;
-  chunksDistance: number = 1;
+  chunkSize = 2;
+  blockSize = 6;
+  chunksDistance: number = 6;
   chunks = [] as any;
   linearChunks = [];
   simplex = new SimplexNoise("myseed5");
@@ -87,7 +87,7 @@ export class World {
   }
 
   removeFarChunks(realX: number, realZ: number) {
-    const ds = this.chunksDistance;
+    const ds = this.chunksDistance*2;
 
     let theChunks = this.chunks;
     this.linearChunks.forEach(function (element, index, object) {
