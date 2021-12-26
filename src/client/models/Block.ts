@@ -6,11 +6,13 @@ class Block {
     id:any;
     code:number;
     mesh?:Mesh;
+    render:boolean = true;
 
     
     constructor(){
         this.id ='';
         this.code = 0;
+       
     }
     setMesh(mesh:Mesh){
         this.mesh = mesh;

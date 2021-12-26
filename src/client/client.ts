@@ -23,7 +23,9 @@ const camera = new PerspectiveCamera(
 );
 camera.position.x = 50;
 camera.position.z = 60;
-camera.position.y = 10*8;
+camera.position.y = 10*10;
+
+let world:World;
 
 
 // RENDER
@@ -37,7 +39,6 @@ scene.add(controls.getLockControls().getObject());
 
 // OBJECTS
 
-let cube: THREE.Object3D;
 
 let player: THREE.Object3D;
 
@@ -86,7 +87,7 @@ let moveLeft = false;
 let moveRight = false;
 let canJump = false;
 
-let world:World;
+
 
 document.body.addEventListener("click", function () {
   controls.start();
@@ -118,8 +119,7 @@ const onKeyDown = function ( event:any ) {
             break;
 
         case 'Space':
-            if ( canJump === true ) velocity.y += 850;
-            canJump = false;
+           controls.jump();
             break;
 
     }
@@ -166,7 +166,7 @@ function init() {
 
  world = new World(scene,camera);
 
-  loadPlayer();
+  // loadPlayer();
 
 
 
@@ -274,7 +274,7 @@ function animate() {
 //   velocity.x -= velocity.x * 1.0 * delta;
 //   velocity.z -= velocity.z * 1.0 * delta;
 
-  controls.update(velocity, delta);
+  controls.update(velocity, delta,world);
 
   // console.log('criando chunk X:',controls.getPlayerPosition().x,'Z:',controls.getPlayerPosition().z);
 
@@ -283,7 +283,7 @@ function animate() {
 //   lockControls.getObject().position.y +=  ( velocity.y * delta );
 
 if(controls != null && controls.getPlayerPosition() != null ){
-  world.updateWorld(controls.getPlayerPosition(),direction);
+  world.updateWorld(scene,controls.getPlayerPosition(),direction);
 }
 
 

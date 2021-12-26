@@ -12,9 +12,11 @@ import {
   Vector3,
   Object3D,
   Fog,
+  Color,
 } from "three";
 import { Chunk } from "./Chunk.ts";
 import { Block } from "./Block.ts";
+import { Factory } from "./Factory.ts";
 
 const { SimplexNoise } = require("simplex-noise");
 
@@ -26,9 +28,12 @@ export class World {
   textures: Texture[] = [];
   scene: Scene;
   camera: Object3D;
-  chunkSize = 2;
-  blockSize = 6;
-  chunksDistance: number = 6;
+  // @ts-ignore
+  factory:Factory;
+  chunkSize = 8;
+  blockSize = 10;
+  chunkHeight = 50;
+  chunksDistance: number = 5;
   chunks = [] as any;
   linearChunks = [];
   simplex = new SimplexNoise("myseed5");
@@ -36,13 +41,15 @@ export class World {
     this.scene = scene;
     this.camera = camera;
 
-    this.loadTextures();
+    this.factory = new Factory(this.scene,this.chunkSize,this.blockSize,this.chunkHeight);
 
     //FOG
-    scene.fog = new Fog( 0x000000, 40, 110 );
+    // scene.fog = new Fog( 0xffffff, 300, 600 );
+    scene.background = new Color(0xffffff);
 
   }
-  updateWorld(f: Vector3, direction: Vector3) {
+  updateWorld(scene:Scene, f: Vector3, direction: Vector3) {
+    this.scene = scene;
     const realX = Math.floor(
       this.camera.position.x / (this.chunkSize * this.blockSize)
     );
@@ -63,10 +70,11 @@ export class World {
   createChunks(realX: number, realZ: number) {
     for (let x = this.chunksDistance * -1; x <= this.chunksDistance; x++) {
       for (let z = this.chunksDistance * -1; z <= this.chunksDistance; z++) {
+        // console.log('criando chunk em X:',realX + x,"Z:",realZ + z);
         this.createChunkAt(realX + x, realZ + z);
       }
     }
-    // console.log('chuncks criados');
+
 
     // let chunck = new Chunk(0,0);
     // chunck.generateChunk(this.scene,this.simplex,this.textures);
@@ -78,9 +86,10 @@ export class World {
       chunk = this.chunks[x][z];
     } catch (error) {}
     if (chunk == null || chunk == undefined) {
-      // console.log('criando chunk X:',x,'Z:',z);
-      chunk = new Chunk(x, z, this.chunkSize, this.blockSize);
-      chunk.generateChunk(this.scene, this.simplex, this.textures);
+      //  console.log('aind criando chunk X:',x,'Z:',z);
+      chunk = new Chunk(x, z, this.chunkSize, this.blockSize,this.chunkHeight);
+      // console.log('gerando chunk X:',x,'Z:',z);
+      chunk.generateChunk(this.factory,this.scene, this.simplex, this.textures);
       // console.log('gerou');
       if (this.chunks[x] == null) {
         this.chunks[x] = [];
@@ -91,8 +100,12 @@ export class World {
     }
   }
 
+  getFactory(){
+    return this.factory;
+  }
+
   removeFarChunks(realX: number, realZ: number) {
-    const ds = this.chunksDistance*2;
+    const ds = this.chunksDistance*4;
 
     let theChunks = this.chunks;
     this.linearChunks.forEach(function (element, index, object) {
@@ -113,24 +126,5 @@ export class World {
     });
   }
 
-  loadTextures() {
-    const texture_path = "../assets/textures/";
-    
-
-    this.textures[0] = new TextureLoader().load(
-      texture_path + "0.png"
-    );
-    this.textures[0].magFilter = NearestFilter;
-
-
-    this.textures[1] = new TextureLoader().load(
-      texture_path + "1.png"
-    );
-    this.textures[1].magFilter = NearestFilter;
-
-    this.textures[10000] = new TextureLoader().load(
-      texture_path + "10000.png"
-    );
-    this.textures[10000].magFilter = NearestFilter;
-  }
+  
 }
