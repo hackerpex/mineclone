@@ -30,10 +30,10 @@ export class World {
   camera: Object3D;
   // @ts-ignore
   factory:Factory;
-  chunkSize = 8;
+  chunkSize =8;
   blockSize = 10;
   chunkHeight = 50;
-  chunksDistance: number = 5;
+  chunksDistance: number = 6;
   chunks = [] as any;
   linearChunks = [];
   simplex = new SimplexNoise("myseed5");
@@ -60,7 +60,7 @@ export class World {
     if (this.lastX == realX && this.lastZ == realZ) {
       return;
     }
-    this.removeFarChunks(realX, realZ);
+     this.removeFarChunks(realX, realZ);
     this.createChunks(realX, realZ);
 
     this.lastX = realX;

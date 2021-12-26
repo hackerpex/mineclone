@@ -6,7 +6,7 @@ class Block {
     id:any;
     code:number;
     mesh?:Mesh;
-    render:boolean = true;
+    render:boolean = false;
 
     
     constructor(){

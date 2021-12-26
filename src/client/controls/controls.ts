@@ -80,7 +80,7 @@ class Controls {
      }
 
     
-    //  camera.position.y += velocity.y  ;
+     camera.position.y += velocity.y  ;
 
     //  console.log(camera.position.y);
      

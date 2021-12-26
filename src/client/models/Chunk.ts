@@ -1,4 +1,4 @@
-import { DoubleSide, InstancedMesh, Matrix4, Mesh, MeshLambertMaterial, Object3D, PlaneGeometry, Scene, Texture, Vector3 } from "three";
+import { Color, DoubleSide, InstancedMesh, Matrix4, Mesh, MeshLambertMaterial, Object3D, PlaneGeometry, Scene, Texture, Vector3 } from "three";
 import { Block } from "./Block";
 import { mergeBufferGeometries } from "../utils/BufferGeometryUtils.js";
 import { BlockType } from "./BlockType";
@@ -37,7 +37,7 @@ export class Chunk {
     meshList = [];
     // mesh:Mesh;
     
-    seaLevel =4;
+    seaLevel =10;
     textures = [] ;
     scene?:Scene;
 
@@ -116,41 +116,58 @@ export class Chunk {
       
         for ( let x = this.posX*this.chunkSize; x < (1+this.posX)*this.chunkSize ; x ++ ) {
             for ( let z = this.posZ*this.chunkSize; z < (1+this.posZ)*this.chunkSize ; z ++ ) {
-                for ( let y = 0; y < this.chunkHeigth; y ++ ) {
-                    let block = this.blocks[x][z][y];
-                    try {
+                let stop = false;
+                for ( let y = this.chunkHeigth-1 ; y >= 0 ; y --) {
+                    
 
-                     
-                        if (
-                            
-                            (((this.blocks[x+nTop.x]??[])[x+nTop.z]??[])[y+nTop.y] ?? new Block()).code  > 0 
-                            &&
-                            (((this.blocks[x+nLeft.x]??[])[x+nLeft.z]??[])[y+nLeft.y] ?? new Block()).code  > 0 
-                            &&
-                            (((this.blocks[x+nRight.x]??[])[x+nRight.z]??[])[y+nRight.y] ?? new Block()).code  > 0 
-                            &&
-                            (((this.blocks[x+nFront.x]??[])[x+nFront.z]??[])[y+nFront.y] ?? new Block()).code  > 0 
-                            &&
-                            (((this.blocks[x+nBack.x]??[])[x+nBack.z]??[])[y+nBack.y] ?? new Block()).code  > 0 
-                            &&
-                            (((this.blocks[x+nDown.x]??[])[x+nDown.z]??[])[y+nDown.y] ?? new Block()).code  > 0 
-                           
-                            
-                            ) {
-                                console.log('ENTROU');
-                                 block.render = false;
-                                this.blocks[x][z][y] = block;
-                        }
-                    } catch (error) {
-                    //    console.log('erro',error);
+                    // const topBlock = this.getBlockAt(0,x,z,y);
+                    //  console.log('bloco x:',x,'z:',z,'y:',y);
+                    // console.log(topBlock);
+
+                    let block = this.blocks[x][z][y];
+                    block.render = false;
+                    if (block.code > 0 && !stop) {
+                        block.render = true;
+                        stop = true;
                         
                     }
+                    // const topBlock = this.getBlockAt(0,x,z,y);
+
+                    // if (topBlock != null && topBlock.code > 0) {
+                    //     block.render = false;
+                    // }
+
+
+                    
                 }
             }
         }
         
 
      this.placeBlocks(factory);
+    }
+
+    getBlockAt(position:number, x:number,z:number,y:number){
+        // 0:top
+        // 1:down
+        // 2:left 
+        // 3:right 
+        // 4:front 
+        // 5:back 
+        switch (position) {
+            case 0:
+                try {
+                    return this.blocks[x+nTop.x][x+nTop.z][y+nTop.y]; 
+                } catch (error) {
+                    return null;
+                }
+                
+                break;
+        
+            default:
+                break;
+        }
+
     }
 
     placeBlocks(factory:Factory){
@@ -164,6 +181,7 @@ export class Chunk {
                     
                     
                     // this.matrix.identity();
+                    
                     this.matrix.makeTranslation(
                         x * this.blockSize,
                         y * this.blockSize,
@@ -183,16 +201,17 @@ export class Chunk {
 
                        
                         let pos = meshObj.usedIndexStack.shift();
-                        //  console.log(pos,"toX:",x,"andZ:",z);
+                        //   console.log(pos,"toX:",x,"andZ:",z,"andY:",y);
                         this.meshList[block.code].usedIndexStack.push(pos);
                          
                        
-                        this.meshList[block.code].mesh.setMatrixAt(pos, this.matrix);  
+                        this.meshList[block.code].mesh.setMatrixAt(pos, this.matrix); 
+                          // this.meshList[block.code].mesh.setColorAt(pos,new Color(0xff2222));
                         // factory.wareHouse[block.code] = ref;                    
                         
                      }
                      else{
-                         console.log(block);
+                        //  console.log(block);
                      }
                    
                     

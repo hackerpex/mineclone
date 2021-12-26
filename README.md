@@ -12,3 +12,14 @@ npm install
 ```
 npm run dev
 ```
+
+# crhome slow rendering
+
+```
+chrome://flags/
+
+find for gpu and enable all except logs
+performance increase significantly
+
+````
+

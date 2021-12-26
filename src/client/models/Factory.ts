@@ -9,7 +9,7 @@ export class Factory {
     chunkSize:number = 0;
     blockSize:number = 0;
     heigth:number = 0;
-    cacheSize:number =500;
+    cacheSize:number =100;
     blockTypes = [0,1,10000];
     
     wareHouse = [];
@@ -56,7 +56,8 @@ export class Factory {
             const geometry = mergeBufferGeometries( geometries );
             geometry.computeBoundingSphere();          
 
-            const mesh = new InstancedMesh(geometry,new MeshLambertMaterial( { map:texture, side: DoubleSide } ),this.cacheSize);
+            // const mesh = new InstancedMesh(geometry,new MeshLambertMaterial( { map:texture,  transparent: true, opacity: 0.6 } ),this.cacheSize);
+            const mesh = new InstancedMesh(geometry,new MeshLambertMaterial( { map:texture} ),this.cacheSize);
 
             this.scene!.add( mesh );
             let xusedIndexStack = [];
@@ -161,7 +162,8 @@ export class Factory {
         // @ts-ignore
         this.frontGeometry.attributes.uv.array[6] = 0.5;
         
-        this.frontGeometry.translate(0, 0, -block_half);
+        this.frontGeometry.translate(0, 0, block_half);
+        this.frontGeometry.rotateY(-Math.PI );
         
         this.backGeometry = new PlaneGeometry(this.blockSize, this.blockSize);
         // @ts-ignore

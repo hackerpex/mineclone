@@ -23,7 +23,7 @@ const camera = new PerspectiveCamera(
 );
 camera.position.x = 50;
 camera.position.z = 60;
-camera.position.y = 10*10;
+camera.position.y = 10*20;
 
 let world:World;
 
