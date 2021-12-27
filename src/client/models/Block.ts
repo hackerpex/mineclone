@@ -6,7 +6,14 @@ class Block {
     id:any;
     code:number;
     mesh?:Mesh;
-    render:boolean = false;
+    render:boolean = true;
+    isTop:boolean =false;
+    bioma:any;
+    treeStage:number = 0;
+    x:number;
+    z:number;
+    y:number;
+    
 
     
     constructor(){

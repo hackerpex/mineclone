@@ -28,6 +28,8 @@ const {SimplexNoise} = require('simplex-noise');
 
 
 export class Chunk {
+    densidadeFlorestal = 0.1;
+    biomaSize = 20;
     posX:number =0;
     posZ:number =0;
     chunkSize:number = 10;
@@ -40,6 +42,7 @@ export class Chunk {
     seaLevel =10;
     textures = [] ;
     scene?:Scene;
+    noise : any;
 
      matrix = new Matrix4();
 
@@ -62,49 +65,164 @@ export class Chunk {
         
         
     }
+    
 
     generateChunk(factory:Factory, scene:Scene, noise:any, textures:[]){
         this.scene =scene;
+        this.noise = noise;
 
         const resolutionNoise = 0.01 
         
         let xOff = this.posX * this.chunkSize * resolutionNoise ;
+        let xTreeSpace = 0;
         for ( let x = this.posX*this.chunkSize; x < (1+this.posX)*this.chunkSize ; x ++ ) {
             let zOff = this.posZ * this.chunkSize * resolutionNoise;
-            this.blocks[x]= [];
+            this.blocks[x]= [];            
+            let zTreeSpace = 0;
             for ( let z = this.posZ*this.chunkSize; z < (1+this.posZ)*this.chunkSize ; z ++ ) {
                 let yOff = 0 ;
                 this.blocks[x][z]= [];
+                let foundWather = false;
+                let treeNoise = this.noise.noise2D(xOff * 100 , zOff * 100);
+
+                
+
                 for ( let y = 0; y < this.chunkHeigth; y ++ ) {
                     let block = new Block();
-                    const value3d = noise.noise3D(xOff, yOff, zOff);
-                    const value2d = noise.noise2D(xOff*1, zOff*1);
-                   
-                    block.code = 1;
+                    block.x =x;
+                    block.y=y;
+                    block.z=z;
+                    const value3d = this.noise.noise3D(xOff, yOff, zOff);
+                    const value2d = this.noise.noise2D(xOff, zOff);
+                    const biomaGen = this.noise.noise2D((xOff + zOff*Math.PI/4) /this.biomaSize,yOff/this.biomaSize/2);
+                    const bioma = this.getBioma(biomaGen);
+                    
+
+                    block.code = bioma.primary;
+                    block.bioma = bioma;
                     if(value3d <= 0.3){
-                       block.code = 1;
+                       block.code = bioma.primary;
                     }
+                    let alturaMaxima = (this.chunkHeigth - this.seaLevel) /2;
+                        let pos = y - this.seaLevel;
+                        let pico =  Math.floor(value2d*alturaMaxima);
+
                     if (y >= this.seaLevel){
-                        block.code = 0;                        
-                         if( (y - this.seaLevel) < Math.floor(value2d*10) ){
-                            block.code = 1;
-                        }
+                        
+                        block.code = 0;              
+                        
+                        if( pos < pico){
+                            block.code = bioma.primary;
+                         }
+                         else{
+                            if( pos == pico ){
+                                if(value3d <= 0.5){
+                                    // console.log('log',Math.floor(Math.abs(treeNoise)*15));
+                                    const separador = Math.max(5,Math.floor(Math.abs(treeNoise)*(10)));
+                                    if(xTreeSpace > separador && zTreeSpace > separador){
+    
+                                        block.treeStage = 10;
+                                        xTreeSpace = 0;
+                                        zTreeSpace = 0;
+                                    }
+                                    
+                                }
+                                
+                            }
+                         }
+                         
                     }
+                    
+                   
+
                     if (y == 0){
                         block.code = 10000;                        
+                    }
+                    if (foundWather) {
+                        block.code = 0;
+                        
+                    }
+
+                    if(block.code == 2){
+                        foundWather = true;
                     }
                     
                     this.blocks[x][z][y]= block;
                     
                     yOff += resolutionNoise;    
                 }
-                zOff += resolutionNoise;   
+                zOff += resolutionNoise;  
+                zTreeSpace++; 
             }
             xOff += resolutionNoise;    
+            xTreeSpace++;
         }
         
 
-     this.checkVisible(factory);
+     this.generateTrees(factory);
+    }
+
+    generateTrees(factory:Factory){
+        for ( let x = this.posX*this.chunkSize; x < (1+this.posX)*this.chunkSize ; x ++ ) {
+            for ( let z = this.posZ*this.chunkSize; z < (1+this.posZ)*this.chunkSize ; z ++ ) {
+                let stop = false;
+                for ( let y = this.chunkHeigth-1 ; y >= 0 ; y --) {
+                    
+
+
+
+                    let block = this.blocks[x][z][y];
+                    if (block.treeStage > 0) {
+
+                        let altura = Math.max(13, Math.floor(this.noise.noise2D(Math.abs(x+y),Math.abs(z+y)) * 20 ));
+                        // console.log("arvore:", altura) ;  
+                        for (let index = 0; index < altura-1; index++) {
+                            let caule = this.blocks[x][z][y+index];
+                            caule.code = 11;
+                            // console.log(caule);
+                            
+                            
+                        }     
+                        for (let iy = 0; iy <= 4; iy++) {
+                            const redutor = Math.floor(iy/2);
+                        for (let ix = -3+redutor; ix <= 3-redutor; ix++) {
+
+                            for (let iz = -3+redutor; iz <= 3-redutor; iz++) {
+                        
+                                
+                                    try {
+                                        let leafBlock = this.blocks[x+ix][z+iz][y+altura-5+iy];
+                                        if (leafBlock != null && !(ix == 0 && iz == 0)) {
+                                            const copa = this.noise.noise2D(Math.abs(x+altura),Math.abs(z+altura));
+                                         
+                                            if (copa <= 0.7 ) {
+                                                leafBlock.code = 11.2;    
+                                            }
+                                            
+                                        }
+                                    } catch (error) {
+                                        
+                                    }
+                                    
+                            
+                                }
+                            }
+                            
+                        }
+                        
+                        
+                        
+                    }
+                   
+
+
+                    
+                }
+            }
+        }
+        
+
+        this.checkVisible(factory);
     }
 
 
@@ -125,17 +243,40 @@ export class Chunk {
                     // console.log(topBlock);
 
                     let block = this.blocks[x][z][y];
-                    block.render = false;
-                    if (block.code > 0 && !stop) {
-                        block.render = true;
-                        stop = true;
-                        
-                    }
-                    // const topBlock = this.getBlockAt(0,x,z,y);
+                    block.render = true;
 
-                    // if (topBlock != null && topBlock.code > 0) {
-                    //     block.render = false;
+                    // if (block.code > 0 && !stop) {
+                    //     block.render = true;
+                    //     stop = true;
+                        
                     // }
+                     const topBlock = this.getBlockAt(0,x,z,y);
+                    //  if (block.code == 11) {
+                    //       console.log("actual",block);
+                          
+                    //  }
+                    //   if (x <= 2 && x > 0 && z == 0) {
+                        // console.log("actual",block);
+                        //   console.log("top",topBlock);
+                         if (topBlock != null && topBlock.code > 0 && topBlock.code != 11 && topBlock.code != 11.2) {
+                           
+                            
+                            if (block.code > 0) {
+                                // console.log("will render");
+                                block.render = false;
+                            }
+                           
+                        }
+                        // block.render = true;
+                    //   }
+                      
+
+                    //  if (topBlock != null && topBlock.code <= 0) {
+                    //     console.log("will render");
+                    //     topBlock.render = false;
+                    //     block.render = true;
+                    // }
+                    
 
 
                     
@@ -157,7 +298,7 @@ export class Chunk {
         switch (position) {
             case 0:
                 try {
-                    return this.blocks[x+nTop.x][x+nTop.z][y+nTop.y]; 
+                    return this.blocks[x+nTop.x][z+nTop.z][y+nTop.y]; 
                 } catch (error) {
                     return null;
                 }
@@ -181,6 +322,8 @@ export class Chunk {
                     
                     
                     // this.matrix.identity();
+
+                    
                     
                     this.matrix.makeTranslation(
                         x * this.blockSize,
@@ -226,5 +369,17 @@ export class Chunk {
     }
   
    
+     getBioma(n:number){
+        if(n < 0.02){
+            return {name:"floresta",primary:6};
+        } else if(n < 0.5){
+            return {name:"planice",primary:1};
+        }
+        else if(n < 0.8){
+            return {name:"deserto",primary:5};
+        }
+        return {name:"floresta",primary:6};
+    }
 
+    
 }

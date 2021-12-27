@@ -44,7 +44,7 @@ export class World {
     this.factory = new Factory(this.scene,this.chunkSize,this.blockSize,this.chunkHeight);
 
     //FOG
-    // scene.fog = new Fog( 0xffffff, 300, 600 );
+     scene.fog = new Fog( 0xffffff, 500, 800 );
     scene.background = new Color(0xffffff);
 
   }

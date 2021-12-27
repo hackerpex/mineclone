@@ -9,8 +9,8 @@ export class Factory {
     chunkSize:number = 0;
     blockSize:number = 0;
     heigth:number = 0;
-    cacheSize:number =100;
-    blockTypes = [0,1,10000];
+    cacheSize:number =250;
+    blockTypes = [0,1,2,5,6,11,11.1,11.2,10000];
     
     wareHouse = [];
     
@@ -53,11 +53,37 @@ export class Factory {
             geometries.push(this.frontGeometry.clone().applyMatrix4( this.matrix ));
             geometries.push(this.backGeometry.clone().applyMatrix4( this.matrix ));
 
-            const geometry = mergeBufferGeometries( geometries );
+            let geometry = mergeBufferGeometries( geometries );
             geometry.computeBoundingSphere();          
-
-            // const mesh = new InstancedMesh(geometry,new MeshLambertMaterial( { map:texture,  transparent: true, opacity: 0.6 } ),this.cacheSize);
-            const mesh = new InstancedMesh(geometry,new MeshLambertMaterial( { map:texture} ),this.cacheSize);
+            let mesh;
+            if(code == 2){//wather
+                 geometries = [];
+                geometries.push(this.topGeometry.clone().applyMatrix4( this.matrix ));
+                
+                 geometry = mergeBufferGeometries( geometries );
+                geometry.computeBoundingSphere(); 
+                mesh = new InstancedMesh(geometry,new MeshLambertMaterial( { map:texture,  transparent: true, opacity: 0.5 } ),this.cacheSize);
+            }
+            else
+            if(code == 11.2){//wather
+                geometries = [];
+                geometries.push(this.topGeometry.clone().applyMatrix4( this.matrix ));
+                geometries.push(this.downGeometry.clone().applyMatrix4( this.matrix ));
+                geometries.push(this.leftGeometry.clone().applyMatrix4( this.matrix ));
+                geometries.push(this.rightGeometry.clone().applyMatrix4( this.matrix ));
+                geometries.push(this.frontGeometry.clone().applyMatrix4( this.matrix ));
+                geometries.push(this.backGeometry.clone().applyMatrix4( this.matrix ));
+               
+                geometry = mergeBufferGeometries( geometries );
+               geometry.computeBoundingSphere(); 
+               mesh = new InstancedMesh(geometry,new MeshLambertMaterial( { map:texture,  transparent: true, opacity: 1 } ),this.cacheSize);
+           }
+           else
+           {
+                mesh = new InstancedMesh(geometry,new MeshLambertMaterial( { map:texture} ),this.cacheSize);
+            }
+             
+            
 
             this.scene!.add( mesh );
             let xusedIndexStack = [];

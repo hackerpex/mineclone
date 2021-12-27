@@ -16,10 +16,10 @@ document.body.appendChild(stats.dom);  // <-- remove me
 
 // CAMERA
 const camera = new PerspectiveCamera(
-  75,
+  50,
   window.innerWidth / window.innerHeight,
-  0.1,
-  1000
+  0.2,
+  800
 );
 camera.position.x = 50;
 camera.position.z = 60;
@@ -56,9 +56,9 @@ scene.add(directionalLight);
 
 
 
-const hemiLight = new HemisphereLight( 0x888888, 0x444444 );
-				hemiLight.position.set( 0, 2, 0 );
-				scene.add( hemiLight );
+// const hemiLight = new HemisphereLight( 0x888888, 0x444444 );
+// 				hemiLight.position.set( 0, 2, 0 );
+// 				scene.add( hemiLight );
 
 // const dirLight = new THREE.DirectionalLight( 0xffffff );
 // 				dirLight.position.set( 10, 2, 1 );
