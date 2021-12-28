@@ -1,9 +1,21 @@
 const path = require('path')
 
 module.exports = {
-    entry: './src/client/client.ts',
+    entry: 
+    './src/client/client.ts',
+    output: {
+        path: path.join(__dirname, 'dist'),
+        filename: '[contenthash].js'
+      },
     module: {
         rules: [
+            {
+                loader: 'worker-loader',
+                test: /\.worker\.js$/,    
+                options: {
+                    filename: '[contenthash].js'
+                  }            
+            },
             {
                 test: /\.tsx?$/,
                 use: 'ts-loader',

@@ -1,7 +1,9 @@
 {
     "compilerOptions": {
         "moduleResolution": "node",
-        "strict": false
+        "strict": false,
+        "module": "es2022"
+ 
     },
     "include": ["**/*.ts"]
 }

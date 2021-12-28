@@ -17,6 +17,10 @@ import {
 import { Chunk } from "./Chunk.ts";
 import { Block } from "./Block.ts";
 import { Factory } from "./Factory.ts";
+import ChunkWorker from './chunk.worker.js'
+// import ChunkWorker = require('./chunk.worker.ts');
+
+
 
 const { SimplexNoise } = require("simplex-noise");
 
@@ -36,6 +40,7 @@ export class World {
   chunksDistance: number = 6;
   chunks = [] as any;
   linearChunks = [];
+  
   simplex = new SimplexNoise("myseed5");
   constructor(scene: Scene, camera: Object3D) {
     this.scene = scene;
@@ -46,6 +51,44 @@ export class World {
     //FOG
      scene.fog = new Fog( 0xffffff, 500, 800 );
     scene.background = new Color(0xffffff);
+
+    //    const chunkWorker1 = new ChunkWorker();
+
+    if (window.Worker) {
+      console.log(new URL('./chunk.worker.js', import.meta.url));
+      const myWorker1 = new ChunkWorker();
+      const myWorker2 = new ChunkWorker();
+      const myWorker3 = new ChunkWorker();
+      myWorker1.postMessage({
+        name: 'contar',
+        sender: 'world',
+        data: {          
+          blocksDef: 'teste'
+        }
+      });
+      myWorker2.postMessage({
+        name: 'contar',
+        sender: 'world2',
+        data: {          
+          blocksDef: 'teste'
+        }
+      });
+      myWorker3.postMessage({
+        name: 'contar',
+        sender: 'world3',
+        data: {          
+          blocksDef: 'teste'
+        }
+      });
+      for (let index = 0; index < 10; index++) {
+        console.log('T',index);
+        
+      }
+      
+    } else {
+      console.log('Your browser doesn\'t support web workers.');
+    }
+
 
   }
   updateWorld(scene:Scene, f: Vector3, direction: Vector3) {
