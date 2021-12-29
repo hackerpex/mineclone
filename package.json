@@ -2,11 +2,10 @@
   "name": "mineclone",
   "version": "1.0.0",
   "description": "",
-  "main": "./src/client/client.ts",
+  "main": "./src/index.js",
   "scripts": {
-    "dev": "webpack serve --config ./src/client/webpack.dev.js ",
-    "prod": "webpack serve --config ./src/client/webpack.common.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "webpack serve --config ./src/webpack.dev.js ",
+    "prod": "webpack serve --config ./src/webpack.prod.js "
   },
   "author": "",
   "license": "ISC",
